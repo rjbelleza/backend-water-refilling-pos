@@ -2,24 +2,26 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
 class UsersTableSeeder extends Seeder
 {
     public function run()
     {
+        // Create admin user
         User::create([
             'name' => 'Admin User',
-            'pin' => '123456',
+            'username' => 'admin',
             'password' => Hash::make('password'),
             'role' => 'admin',
         ]);
 
+        // Create staff user
         User::create([
             'name' => 'Staff User',
-            'pin' => '654321',
+            'username' => 'staff',
             'password' => Hash::make('password'),
             'role' => 'staff',
         ]);
