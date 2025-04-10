@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\PinAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +15,21 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// Public routes
+Route::post('/login', [PinAuthController::class, 'login']);
+
+// Protected routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [PinAuthController::class, 'logout']);
+    Route::get('/user', [PinAuthController::class, 'user']);
+    
+    // Staff routes
+    Route::middleware('ability:staff')->group(function () {
+        // Staff endpoints here
+    });
+    
+    // Admin routes
+    Route::middleware('ability:admin')->group(function () {
+        // Admin endpoints, including PIN management
+    });
 });
