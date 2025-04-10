@@ -13,7 +13,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
-        'pin',
+        'username',
         'password',
         'role',
     ];
@@ -27,7 +27,7 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
-
+    
     public function isStaff()
     {
         return $this->role === 'staff';
