@@ -12,7 +12,7 @@ class UsersTableSeeder extends Seeder
     {
         // Create admin user
         User::create([
-            'name' => 'Admin User',
+            'name' => 'Sean	Paterson',
             'username' => 'admin',
             'password' => Hash::make('password'),
             'role' => 'admin',
@@ -20,7 +20,7 @@ class UsersTableSeeder extends Seeder
 
         // Create staff user
         User::create([
-            'name' => 'Staff User',
+            'name' => 'Andrea North',
             'username' => 'staff',
             'password' => Hash::make('password'),
             'role' => 'staff',
