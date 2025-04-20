@@ -24,6 +24,6 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Admin routes
     Route::middleware('ability:admin')->group(function () {
-        // Admin endpoints here
+        Route::get('/users', [UserManagementController::class, 'index']);
     });
 });

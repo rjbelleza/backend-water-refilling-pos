@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class UserManagementController extends Controller
 {
@@ -16,9 +17,14 @@ class UserManagementController extends Controller
     
     public function index()
     {
-        $users = User::select('id', 'name', 'username', 'role', 'created_at')->get();
+        try {
+            $users = User::select('id', 'fname', 'lname', 'username', 'role', 'created_at')->get();
         
-        return response()->json(['users' => $users]);
+            return response()->json($users);
+        } catch (\Exception $e) {
+            \Log::error($e);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
     
     public function store(Request $request)
