@@ -17,6 +17,7 @@ return new class extends Migration
             $table->double('price');
             $table->integer('stock_quantity');
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

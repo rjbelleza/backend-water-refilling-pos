@@ -33,4 +33,9 @@ class User extends Authenticatable
     {
         return $this->role === 'staff';
     }
+
+    public function product()
+    {
+        return $this->hasMany(Product::class);
+    }
 }
