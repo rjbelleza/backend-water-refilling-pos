@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('inventory', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained();
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->integer('stock_in');
             $table->integer('stock_out')->nullable();
             $table->timestamp('date')->useCurrent();
