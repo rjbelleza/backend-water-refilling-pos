@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/delete/category/{category}', [CategoryController::class, 'destroy']);
     Route::post('/product', [ProductController::class, 'store']);
     Route::get('/products', [ProductController::class, 'index']);
+    Route::patch('/category/disable/{category}', [CategoryController::class, 'disable']);
     
     // Staff routes
     Route::middleware('ability:staff')->group(function () {

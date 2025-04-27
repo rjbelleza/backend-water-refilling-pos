@@ -17,6 +17,7 @@ class UsersTableSeeder extends Seeder
             'username' => 'sean123',
             'password' => Hash::make('password'),
             'role' => 'admin',
+            'isActive' => true,
         ]);
 
         // Create staff user
@@ -26,6 +27,7 @@ class UsersTableSeeder extends Seeder
             'username' => 'andrea123',
             'password' => Hash::make('password'),
             'role' => 'staff',
+            'isActive' => true,
         ]);
     }
 }

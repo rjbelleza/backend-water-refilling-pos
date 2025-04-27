@@ -10,17 +10,27 @@ class CategoryController extends Controller
     public function index() 
     {
         try {
-            $categories = Category::select('id', 'name')->get();
+            $categories = Category::select('id', 'name')
+                                ->where('isActive', 1) 
+                                ->get();
 
-            return response()->json($categories);
-        } catch (\Exception $e) {
-            \Log::error($e);
             return response()->json([
-                'error' => $e,
-                'message' => 'Error fetching categories'
+                'status' => 'success',
+                'data' => $categories
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching categories: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error fetching categories',
+                'error' => $e->getMessage() 
             ], 500);
         }
     }
+
 
     public function store(Request $request) 
     {
@@ -31,6 +41,7 @@ class CategoryController extends Controller
     
             Category::create([
                 'name' => $validated['name'],
+                'isActive' => true,
             ]);
     
             return response()->json([
@@ -61,4 +72,27 @@ class CategoryController extends Controller
             ], 500);
         }
     }
+
+    public function disable(Category $category) {
+        try {
+            $category->update(['isActive' => false]);
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Category disabled successfully'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error disabling category: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
+    
+            // Return an error response
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error disabling category',
+                'error' => $e->getMessage() 
+            ], 500);
+        }
+    }
+    
 }

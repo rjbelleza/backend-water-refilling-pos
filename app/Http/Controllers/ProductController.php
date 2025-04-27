@@ -38,7 +38,8 @@ class ProductController extends Controller
                 'price' => $validated['price'],
                 'category_id' => $validated['category_id'],
                 'stock_quantity' => $validated['stock_quantity'],
-                'user_id' => auth()->id()
+                'user_id' => auth()->id(),
+                'isActive' => true,
             ]);
 
             return response()->json([
