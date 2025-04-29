@@ -35,10 +35,23 @@ class CategoryController extends Controller
     public function store(Request $request) 
     {
         try {
+            // Validate input first
             $validated = $request->validate([
-                'name' => 'required|string|max:50|unique:categories',
+                'name' => 'required|string|max:50',
             ]);
     
+            // Check if the category already exists
+            $existingCategory = Category::where('name', $validated['name'])
+                                        ->where('isActive', true)
+                                        ->first();
+    
+            if ($existingCategory) {
+                return response()->json([
+                    'message' => 'Category already exists'
+                ], 409); 
+            }
+    
+            // Create new category
             Category::create([
                 'name' => $validated['name'],
                 'isActive' => true,
@@ -47,11 +60,12 @@ class CategoryController extends Controller
             return response()->json([
                 'message' => 'Category created successfully',
             ], 201);
+    
         } catch (\Exception $e) {
             \Log::error($e);
             return response()->json([
                 'error' => $e->getMessage(),
-                'message' => 'Category name already exist!',
+                'message' => 'An error occurred while creating the category.',
             ], 500);
         }
     }
@@ -73,14 +87,19 @@ class CategoryController extends Controller
         }
     }
 
-    public function disable(Category $category) {
+    public function disable(Category $category) 
+    {
         try {
-            $category->update(['isActive' => false]);
-            
+            $category->forceFill(['isActive' => false])->save();
+
+            $category->refresh();
+    
             return response()->json([
                 'status' => 'success',
-                'message' => 'Category disabled successfully'
+                'message' => 'Category disabled successfully',
+                'data' => $category 
             ]);
+
         } catch (\Exception $e) {
             \Log::error('Error disabling category: ' . $e->getMessage(), [
                 'exception' => $e

@@ -20,10 +20,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/category', [CategoryController::class, 'store']);
     Route::get('/categories', [CategoryController::class, 'index']);
-    Route::delete('/delete/category/{category}', [CategoryController::class, 'destroy']);
     Route::post('/product', [ProductController::class, 'store']);
     Route::get('/products', [ProductController::class, 'index']);
     Route::patch('/category/disable/{category}', [CategoryController::class, 'disable']);
+    Route::put('/product/{id}', [ProductController::class, 'updateDetails']);
     
     // Staff routes
     Route::middleware('ability:staff')->group(function () {
