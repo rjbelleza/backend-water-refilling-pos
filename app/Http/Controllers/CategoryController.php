@@ -70,23 +70,6 @@ class CategoryController extends Controller
         }
     }
 
-
-    public function destroy(Category $category) {
-        try {
-            $category->delete();
-
-            return response()->json([
-                'message' => 'Category deleted successfully'
-            ]);
-        } catch (\Exception $e) {
-            \Log::error($e);
-            return response()->json([
-                'message' => 'Error deleting category',
-                'error' => $e
-            ], 500);
-        }
-    }
-
     public function disable(Category $category) 
     {
         try {
@@ -96,19 +79,19 @@ class CategoryController extends Controller
     
             return response()->json([
                 'status' => 'success',
-                'message' => 'Category disabled successfully',
+                'message' => 'Category deleted successfully',
                 'data' => $category 
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error disabling category: ' . $e->getMessage(), [
+            \Log::error('Error deleting category: ' . $e->getMessage(), [
                 'exception' => $e
             ]);
     
             // Return an error response
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error disabling category',
+                'message' => 'Error deleting category',
                 'error' => $e->getMessage() 
             ], 500);
         }
