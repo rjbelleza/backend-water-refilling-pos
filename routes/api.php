@@ -24,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/products', [ProductController::class, 'index']);
     Route::patch('/category/disable/{category}', [CategoryController::class, 'disable']);
     Route::put('/product/{id}', [ProductController::class, 'updateDetails']);
+    Route::patch('/product/delete/{product}', [ProductController::class, 'disable']);
     
     // Staff routes
     Route::middleware('ability:staff')->group(function () {

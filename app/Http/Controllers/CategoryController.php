@@ -39,16 +39,27 @@ class CategoryController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:50',
             ]);
-    
-            // Check if the category already exists
-            $existingCategory = Category::where('name', $validated['name'])
-                                        ->where('isActive', true)
-                                        ->first();
-    
-            if ($existingCategory) {
+
+            $category = Category::where('name', $validated['name'])->first();
+
+            if ($category && !$category->isActive) {
+                // Re-enable and update the existing category
+                $category->update([
+                    'isActive' => true
+                ]);
+
                 return response()->json([
-                    'message' => 'Category already exists'
-                ], 409); 
+                    'status' => 'success',
+                    'message' => 'category added successfully',
+                    'category' => $category
+                ]);
+            }
+
+            if ($category && $category->isActive) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Category with the same name already exists'
+                ], 409);
             }
     
             // Create new category
@@ -58,14 +69,17 @@ class CategoryController extends Controller
             ]);
     
             return response()->json([
-                'message' => 'Category created successfully',
+                'status' => 'success',
+                'message' => 'New category created',
             ], 201);
     
         } catch (\Exception $e) {
-            \Log::error($e);
+            \Log::error('Error creating category' . $e->getMessage());
+
             return response()->json([
+                'status' => 'error',
                 'error' => $e->getMessage(),
-                'message' => 'An error occurred while creating the category.',
+                'message' => 'Failed creating category',
             ], 500);
         }
     }
@@ -79,7 +93,7 @@ class CategoryController extends Controller
     
             return response()->json([
                 'status' => 'success',
-                'message' => 'Category deleted successfully',
+                'message' => 'Category removed successfully',
                 'data' => $category 
             ]);
 
@@ -91,7 +105,7 @@ class CategoryController extends Controller
             // Return an error response
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error deleting category',
+                'message' => 'Error removing category',
                 'error' => $e->getMessage() 
             ], 500);
         }
