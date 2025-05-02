@@ -16,6 +16,7 @@ class CategoryController extends Controller
 
             return response()->json([
                 'status' => 'success',
+                'message' => 'Fetched categories successfully',
                 'data' => $categories
             ]);
         } catch (\Exception $e) {
@@ -50,7 +51,7 @@ class CategoryController extends Controller
 
                 return response()->json([
                     'status' => 'success',
-                    'message' => 'category added successfully',
+                    'message' => 'Category added successfully',
                     'category' => $category
                 ]);
             }

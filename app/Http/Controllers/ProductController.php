@@ -18,6 +18,7 @@ class ProductController extends Controller
             \Log::error($e);
             return response()->json([
                 'error' => $e,
+                'status' => 'error',
                 'message' => 'Error fetching products'
             ]);
         }
@@ -74,7 +75,7 @@ class ProductController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'New product created.',
+                'message' => 'New product created',
                 'product' => $newProduct
             ]);
 
@@ -110,6 +111,7 @@ class ProductController extends Controller
             $product->update($validated);
 
             return response()->json([
+                'status' => 'success',
                 'message' => 'Product updated successfully',
                 'product' => $product
             ]);
@@ -120,7 +122,7 @@ class ProductController extends Controller
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error updating categories',
+                'message' => $e->getMessage(),
                 'error' => $e->getMessage() 
             ], 500);
         }
@@ -142,6 +144,42 @@ class ProductController extends Controller
                 'message' => 'Error deleting product',
                 'error' => $e
             ], 500);
+        }
+    }
+
+    public function updateStock(Request $request, Product $product) {
+        try {
+            $validated = $request->validate([
+                'stockAction' => 'required|in:stock-in,stock-out',
+                'toStock' => 'required'
+            ]);
+
+            if ($validated['stockAction'] === 'stock-out') {
+                if ($product->stock_quantity < $validated['toStock']) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Not enough stock to deduct'
+                    ], 400);
+                }
+
+                $product->stock_quantity -= $validated['toStock'];
+            } else {
+                $product->stock_quantity += $validated['toStock'];
+            }
+
+            $product->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Stock updated successfully',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error updating stock: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed updating stock',
+                'error' => $e->getMessage()
+            ]);
         }
     }
 }
