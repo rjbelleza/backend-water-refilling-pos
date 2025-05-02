@@ -30,6 +30,7 @@ class ProductController extends Controller
             'price' => 'required|numeric',
             'stock_quantity' => 'required|integer',
             'category_id' => 'required|integer',
+            'unit' => 'required|string'
         ]);
 
         try {
@@ -41,6 +42,7 @@ class ProductController extends Controller
                     'price' => $validated['price'],
                     'category_id' => $validated['category_id'],
                     'stock_quantity' => $validated['stock_quantity'],
+                    'unit' => $validated['unit'],
                     'user_id' => auth()->id(),
                     'isActive' => true
                 ]);
@@ -65,6 +67,7 @@ class ProductController extends Controller
                 'price' => $validated['price'],
                 'category_id' => $validated['category_id'],
                 'stock_quantity' => $validated['stock_quantity'],
+                'unit' => $validated['unit'],
                 'user_id' => auth()->id(),
                 'isActive' => true
             ]);
@@ -98,7 +101,8 @@ class ProductController extends Controller
                     Rule::unique('products')->ignore($id), 
                 ],
                 'price' => 'required',
-                'category_id' => 'required|exists:categories,id'
+                'category_id' => 'required|exists:categories,id',
+                'unit' => 'required|string'
             ]);
 
             

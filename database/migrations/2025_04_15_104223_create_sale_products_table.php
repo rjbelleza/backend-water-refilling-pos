@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('sale_products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sale_id')->constrained();
-            $table->foreignId('product_id')->constrained();
+            $table->foreignId('sale_id')->constrained()->onDelete('restrict');
+            $table->foreignId('product_id')->constrained()->onDelete('restrict');
             $table->integer('quantity');
             $table->double('discount')->default(0);
             $table->double('subtotal');

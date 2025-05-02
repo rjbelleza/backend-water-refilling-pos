@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('expenses', function (Blueprint $table) {
+        Schema::create('product_history', function (Blueprint $table) {
             $table->id();
+            $table->string('field_changed');
+            $table->string('old_value');
+            $table->string('new_value');
+            $table->foreignId('product_id')->constrained()->onDelete('restrict');
             $table->foreignId('user_id')->constrained()->onDelete('restrict');
-            $table->text('description');
-            $table->double('amount');
-            $table->timestamp('date')->useCurrent();
+            $table->dateTime('updated_at')->useCurrent();
         });
     }
 
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('expenses');
+        Schema::dropIfExists('product_history');
     }
 };

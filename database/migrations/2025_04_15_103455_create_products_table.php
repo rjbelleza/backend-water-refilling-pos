@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name', 50);
             $table->double('price');
-            $table->integer('stock_quantity');
-            $table->foreignId('category_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->double('stock_quantity');
+            $table->string('unit');
+            $table->foreignId('category_id')->constrained()->onDelete('restrict');
+            $table->foreignId('user_id')->constrained()->onDelete('restrict');
             $table->boolean('isActive');
             $table->timestamps();
         });

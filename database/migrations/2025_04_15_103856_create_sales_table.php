@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
+            $table->foreignId('user_id')->constrained()->onDelete('restrict');
             $table->string('customer', 50)->default('walk-in');
             $table->double('total_amount');
             $table->timestamp('created_at')->useCurrent();
