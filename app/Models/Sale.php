@@ -12,18 +12,19 @@ class Sale extends Model
     protected $fillable = [
         'user_id',
         'customer',
+        'discount',
         'total_amount',
         'created_at'
     ];
 
-    public function items() 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function saleProducts()
     {
         return $this->hasMany(SaleProduct::class);
-    }
-    
-    public function user() 
-    {
-        return $this->belongsTo(User::class);
     }
     
 }

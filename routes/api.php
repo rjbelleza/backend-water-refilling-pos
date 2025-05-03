@@ -6,6 +6,7 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\SaleProductController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -28,6 +29,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/product/delete/{product}', [ProductController::class, 'disable']);
     Route::put('/product/{product}/update-stock', [ProductController::class, 'updateStock']);
     Route::post('/sales', [SaleController::class, 'store']);
+    Route::get('/sales', [SaleController::class, 'index']);
     
     // Staff routes
     Route::middleware('ability:staff')->group(function () {
