@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('restrict');
             $table->string('customer', 50)->default('walk-in');
             $table->double('total_amount');
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps(); 
         });
     }
 

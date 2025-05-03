@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SaleController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -26,6 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/product/{id}', [ProductController::class, 'updateDetails']);
     Route::patch('/product/delete/{product}', [ProductController::class, 'disable']);
     Route::put('/product/{product}/update-stock', [ProductController::class, 'updateStock']);
+    Route::post('/sales', [SaleController::class, 'store']);
     
     // Staff routes
     Route::middleware('ability:staff')->group(function () {

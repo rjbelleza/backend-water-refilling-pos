@@ -32,4 +32,10 @@ class Product extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function saleItems() 
+    {
+        return $this->hasMany(SaleProduct::class);
+    }
+    
 }
