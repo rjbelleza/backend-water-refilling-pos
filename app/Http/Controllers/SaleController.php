@@ -14,8 +14,8 @@ class SaleController extends Controller
         $pageSize = $request->query('pageSize', 10);
 
         $sales = Sale::with([
-            'user:id,fname,lname', // cashier who created it
-            'saleProducts.product:id,name,price' // products involved
+            'user:id,fname,lname,role', // cashier who created it
+            'saleProducts.product:id,name,price,unit' // products involved
         ])
         ->orderBy('created_at', 'desc')
         ->paginate($pageSize);
