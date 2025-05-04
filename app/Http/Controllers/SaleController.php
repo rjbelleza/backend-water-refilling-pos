@@ -30,24 +30,36 @@ class SaleController extends Controller
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|integer|min:1',
-            'products.*.price' => 'required|numeric|min:0', // Add price validation
-            'subtotal' => 'required|numeric|min:0', // Added from frontend
+            'products.*.price' => 'required|numeric|min:0',
+            'subtotal' => 'required|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
             'discount_type' => 'nullable|in:percentage,fixed',
-            'amount_paid' => 'required|numeric|min:0', // Added from frontend
+            'amount_paid' => 'required|numeric|min:0',
         ]);
 
         DB::beginTransaction();
 
         try {
-            $rawTotal = $validated['subtotal']; // Use the subtotal from frontend
+            $rawTotal = $validated['subtotal'];
+            $discount = $validated['discount'] ?? 0;
+            $discountType = $validated['discount_type'] ?? 'fixed';
 
+            // Convert discount to final amount if percentage
+            if ($discountType === 'percentage') {
+                $discount = ($discount / 100) * $rawTotal;
+            }
+
+            $finalTotal = $rawTotal - $discount;
+            $change = $validated['amount_paid'] - $finalTotal;
+
+            // Create sale record upfront
             $sale = Sale::create([
                 'user_id' => auth()->id(),
                 'customer' => $validated['customer_name'] ?? 'Walk-in',
-                'total_amount' => 0, 
-                'discount' => 0,     
-                'change' => $validated['amount_paid'] - ($rawTotal - ($validated['discount'] ?? 0)), // Calculate change
+                'subtotal' => $rawTotal,
+                'discount' => $discount,
+                'amount_paid' => $validated['amount_paid'],
+                'created_at' => now(),
             ]);
 
             foreach ($validated['products'] as $item) {
@@ -64,26 +76,10 @@ class SaleController extends Controller
                 $sale->saleProducts()->create([
                     'product_id' => $product->id,
                     'quantity' => $quantity,
-                    'price' => $item['price'], // Store the price at time of sale
-                    'subtotal' => $item['price'] * $quantity,
+                    'total_price' => $item['price'] * $quantity,
+                    'created_at' => now(),
                 ]);
             }
-
-            // Calculate total discount
-            $discount = $validated['discount'] ?? 0;
-            $discountType = $validated['discount_type'] ?? 'fixed';
-
-            if ($discountType === 'percentage') {
-                $discount = ($discount / 100) * $rawTotal;
-            }
-
-            $finalTotal = $rawTotal - $discount;
-
-            $sale->update([
-                'discount' => $discount,
-                'total_amount' => $finalTotal,
-                'change' => $validated['amount_paid'] - $finalTotal, // Recalculate change with final total
-            ]);
 
             DB::commit();
 
@@ -91,7 +87,7 @@ class SaleController extends Controller
                 'status' => 'success',
                 'message' => 'Sale recorded successfully',
                 'sale_id' => $sale->id,
-                'change' => $sale->change // Return change to frontend
+                'change' => $change,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

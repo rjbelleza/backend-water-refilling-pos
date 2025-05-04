@@ -13,7 +13,8 @@ class Sale extends Model
         'user_id',
         'customer',
         'discount',
-        'total_amount',
+        'subtotal',
+        'amount_paid',
         'created_at'
     ];
 
