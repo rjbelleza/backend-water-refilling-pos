@@ -6,7 +6,8 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
-use App\Http\Controllers\SaleProductController;
+use App\Http\Controllers\ExpenseController;
+
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -39,5 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin routes
     Route::middleware('ability:admin')->group(function () {
         Route::get('/users', [UserManagementController::class, 'index']);
+        Route::post('/expense', [ExpenseController::class, 'store']);
+        Route::get('/expenses', [ExpenseController::class, 'index']);
     });
 });

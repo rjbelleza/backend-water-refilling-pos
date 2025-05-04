@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('restrict');
             $table->text('description');
             $table->double('amount');
-            $table->timestamp('date')->useCurrent();
+            $table->timestamp('created_at');
         });
     }
 
