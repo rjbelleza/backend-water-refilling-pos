@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('sale_id')->constrained()->onDelete('restrict');
             $table->foreignId('product_id')->constrained()->onDelete('restrict');
             $table->integer('quantity');
-            $table->double('subtotal');
-            $table->timestamps();
+            $table->decimal('total_price', 10, 2);
+            $table->timestamp('created_at');
         });
     }
 

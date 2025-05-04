@@ -14,8 +14,11 @@ class SaleProduct extends Model
         'product_id',
         'quantity',
         'discount',
-        'subtotal',
+        'total_price',
+        'created_at',
     ];
+
+    public $timestamps = false;
 
     public function sale() 
     {

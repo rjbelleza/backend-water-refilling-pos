@@ -30,75 +30,79 @@ class SaleController extends Controller
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|integer|min:1',
+            'products.*.price' => 'required|numeric|min:0', // Add price validation
+            'subtotal' => 'required|numeric|min:0', // Added from frontend
             'discount' => 'nullable|numeric|min:0',
             'discount_type' => 'nullable|in:percentage,fixed',
+            'amount_paid' => 'required|numeric|min:0', // Added from frontend
         ]);
-    
+
         DB::beginTransaction();
-    
+
         try {
-            $rawTotal = 0;
-    
+            $rawTotal = $validated['subtotal']; // Use the subtotal from frontend
+
             $sale = Sale::create([
                 'user_id' => auth()->id(),
-                'customer' => $validated['customer_name'],
-                'total_amount' => 0, // to be updated later
-                'discount' => 0,     // to be updated later
+                'customer' => $validated['customer_name'] ?? 'Walk-in',
+                'total_amount' => 0, 
+                'discount' => 0,     
+                'change' => $validated['amount_paid'] - ($rawTotal - ($validated['discount'] ?? 0)), // Calculate change
             ]);
-    
+
             foreach ($validated['products'] as $item) {
                 $product = Product::findOrFail($item['product_id']);
                 $quantity = $item['quantity'];
-    
+
                 if ($product->stock_quantity < $quantity) {
                     throw new \Exception("Insufficient stock for {$product->name}");
                 }
-    
+
                 $product->stock_quantity -= $quantity;
                 $product->save();
-    
-                $itemSubtotal = $product->price * $quantity;
-                $rawTotal += $itemSubtotal;
-    
+
                 $sale->saleProducts()->create([
                     'product_id' => $product->id,
                     'quantity' => $quantity,
-                    'subtotal' => $itemSubtotal,
+                    'price' => $item['price'], // Store the price at time of sale
+                    'subtotal' => $item['price'] * $quantity,
                 ]);
             }
-    
+
             // Calculate total discount
             $discount = $validated['discount'] ?? 0;
             $discountType = $validated['discount_type'] ?? 'fixed';
-    
+
             if ($discountType === 'percentage') {
                 $discount = ($discount / 100) * $rawTotal;
             }
-    
+
             $finalTotal = $rawTotal - $discount;
-    
+
             $sale->update([
                 'discount' => $discount,
                 'total_amount' => $finalTotal,
+                'change' => $validated['amount_paid'] - $finalTotal, // Recalculate change with final total
             ]);
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Sale recorded successfully',
-                'sale_id' => $sale->id
+                'sale_id' => $sale->id,
+                'change' => $sale->change // Return change to frontend
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Sale error: ' . $e->getMessage());
-    
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Sale failed',
                 'error' => $e->getMessage()
             ], 500);
         }
-    }    
+    }
 
 }
