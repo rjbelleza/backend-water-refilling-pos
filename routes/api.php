@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\ProfitController;
 
 
 // Public routes
@@ -42,5 +43,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/users', [UserManagementController::class, 'index']);
         Route::post('/expense', [ExpenseController::class, 'store']);
         Route::get('/expenses', [ExpenseController::class, 'index']);
+        Route::get('/profit', [ProfitController::class, 'getMonthlyReport']);
     });
 });
