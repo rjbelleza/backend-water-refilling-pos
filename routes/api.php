@@ -46,5 +46,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/expenses', [ExpenseController::class, 'index']);
         Route::get('/profit', [ProfitController::class, 'getMonthlyReport']);
         Route::get('/dashboard-summary', [DashboardController::class, 'getSummary']);
+        Route::get('/dashboard-graph', [DashboardController::class, 'getGraphData']);
     });
 });
