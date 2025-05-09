@@ -12,15 +12,13 @@ class DashboardController extends Controller
     {
         $range = $request->query('range');
 
-        \Log::info('Time range selected: ' . $range);
-
-        // Default to last day if range is not valid
+        // Default to last year if range is not valid
         $startDate = match ($range) {
             'last_year' => now()->subYear(),
             'last_month' => now()->subMonth(),
             'last_week' => now()->subWeek(),
             'last_day' => now()->subDay(),
-            default => now()->subDay(),
+            default => now()->subYear(),
         };
 
         try {
