@@ -16,16 +16,10 @@ return new class extends Migration
             $table->string('name', 50);
             $table->decimal('price', 10, 2);
             $table->double('stock_quantity');
-<<<<<<< HEAD
             $table->integer('returned')->default(0);
             $table->integer('borrowed')->default(0);
             $table->boolean('track_stock')->default(true);
             $table->foreignId('category_id')->constrained()->onDelete('restrict');
-=======
-            $table->integer('returned_containers')->default(0);
-            $table->integer('borrowed_containers')->default(0);
-            $table->boolean('track_stock')->default(true);
->>>>>>> 179834ea2e3c5536a302635c42c2d5b015b5d05b
             $table->foreignId('user_id')->constrained()->onDelete('restrict');
             $table->boolean('isActive')->default(true);
             $table->timestamps();

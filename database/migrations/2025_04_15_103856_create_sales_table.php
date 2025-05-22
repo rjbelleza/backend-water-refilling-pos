@@ -18,7 +18,6 @@ return new class extends Migration
             $table->decimal('subtotal', 10, 2);
             $table->decimal('additional_fee')->default(0);
             $table->decimal('discount', 10, 2)->default(0);
-            $table->decimal('additional_fee')->default(0);
             $table->decimal('amount_paid', 10, 2); 
             $table->timestamp('created_at');
         });
