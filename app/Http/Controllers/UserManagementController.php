@@ -33,37 +33,56 @@ class UserManagementController extends Controller
             $validated = $request->validate([
                 'fname' => 'required|string|max:255',
                 'lname' => 'required|string|max:255',
-                'username' => 'required|string|max:255|unique:users,username',
-                'password' => 'required|string|min:8|confirmed', 
+                'username' => 'required|string|max:255',
+                'password' => 'required|string|min:8|confirmed', // password_confirmation required
                 'role' => 'required|string|in:admin,staff',
             ]);
 
+            $ExistingUsername = User::where('username', $validated['username'])->first();
+
+            if ($ExistingUsername && $ExistingUsername->isActive) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Username already taken.'
+                ], 409);
+            }
+
+            // Check if user exists by fname + lname
             $user = User::where('fname', $validated['fname'])
                         ->where('lname', $validated['lname'])
                         ->first();
 
+            // If exists and not active, reactivate and update credentials
             if ($user && !$user->isActive) {
-                User::update([
+                $user->update([
                     'username' => $validated['username'],
-                    'password' => $validated['password'],
+                    'password' => Hash::make($validated['password']),
+                    'role' => $validated['role'], 
                     'isActive' => true
                 ]);
 
                 return response()->json([
                     'status' => 'success',
                     'message' => 'User added successfully',
-                    'product' => $user
+                    'user' => [
+                        'id' => $user->id,
+                        'fname' => $user->fname,
+                        'lname' => $user->lname,
+                        'username' => $user->username,
+                        'role' => $user->role,
+                    ]
                 ]);
             }
 
+            // If exists and active, reject
             if ($user && $user->isActive) {
-                 return response()->json([
+                return response()->json([
                     'status' => 'error',
                     'message' => 'User already exists.'
                 ], 409);
             }
 
-            // Create the user with hashed password
+            // Create new user
             $user = User::create([
                 'fname' => $validated['fname'],
                 'lname' => $validated['lname'],
@@ -74,21 +93,22 @@ class UserManagementController extends Controller
             ]);
 
             return response()->json([
+                'status' => 'success',
                 'message' => ucfirst($user->role) . ' user created successfully.',
                 'user' => [
                     'id' => $user->id,
-                    'fname' => $user->name,
-                    'lname' => $user->name,
+                    'fname' => $user->fname,
+                    'lname' => $user->lname,
                     'username' => $user->username,
                     'role' => $user->role,
                 ]
             ], 201);
         } catch (\Exception $e) {
-            \Log::error('Error creating user' . $e->getMessage());
+            \Log::error('Error creating user: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
     
