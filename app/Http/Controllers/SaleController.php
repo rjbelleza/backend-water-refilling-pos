@@ -34,6 +34,7 @@ class SaleController extends Controller
             'subtotal' => 'required|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
             'discount_type' => 'nullable|in:percentage,fixed',
+            'additional_fee' => 'nullable|numeric|min:0',
             'amount_paid' => 'required|numeric|min:0',
         ]);
 
@@ -43,21 +44,23 @@ class SaleController extends Controller
             $rawTotal = $validated['subtotal'];
             $discount = $validated['discount'] ?? 0;
             $discountType = $validated['discount_type'] ?? 'fixed';
+            $additionalFee = $validated['additional_fee'] ?? 0;
 
-            // Convert discount to final amount if percentage
+            // Convert discount if type is percentage
             if ($discountType === 'percentage') {
                 $discount = ($discount / 100) * $rawTotal;
             }
 
-            $finalTotal = $rawTotal - $discount;
+            $finalTotal = $rawTotal - $discount + $additionalFee;
             $change = $validated['amount_paid'] - $finalTotal;
 
-            // Create sale record upfront
+            // Create sale record
             $sale = Sale::create([
                 'user_id' => auth()->id(),
-                'customer' => $validated['customer_name'] ?? 'Walk-in',
+                'customer' => strtolower($validated['customer_name'] ?? 'walk-in'),
                 'subtotal' => $rawTotal,
                 'discount' => $discount,
+                'additional_fee' => $additionalFee,
                 'amount_paid' => $validated['amount_paid'],
                 'created_at' => now(),
             ]);

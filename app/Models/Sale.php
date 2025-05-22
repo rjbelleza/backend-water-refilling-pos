@@ -12,10 +12,11 @@ class Sale extends Model
     protected $fillable = [
         'user_id',
         'customer',
-        'discount',
         'subtotal',
+        'discount',
+        'additional_fee',
         'amount_paid',
-        'created_at'
+        'created_at',
     ];
 
     public $timestamps = false;
@@ -28,6 +29,11 @@ class Sale extends Model
     public function saleProducts()
     {
         return $this->hasMany(SaleProduct::class);
+    }
+
+    public function customers() 
+    {
+        return $this->belongsTo(Customer::class);
     }
     
 }
