@@ -13,8 +13,9 @@ class Product extends Model
         'name',
         'price',
         'stock_quantity',
-        'unit',
         'user_id',
+        'track_stock',
+        'category_id',
         'isActive'
     ];
 
@@ -25,6 +26,11 @@ class Product extends Model
     public function user() 
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function category() 
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function saleItems() 

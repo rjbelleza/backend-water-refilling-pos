@@ -11,7 +11,7 @@ class ProductController extends Controller
 
     public function index() {
         try {
-            $products = Product::with(['user'])->where('isActive', 1)->get();
+            $products = Product::with(['user', 'category'])->where('isActive', 1)->get();
 
             return response()->json($products);
         } catch (\Exception $e) {
@@ -29,6 +29,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string',
             'price' => 'required|numeric',
+            'category_id' => 'required|exists:categories,id',
             'stock_quantity' => 'required|integer',
         ]);
 
@@ -40,6 +41,7 @@ class ProductController extends Controller
                 $product->update([
                     'price' => $validated['price'],
                     'stock_quantity' => $validated['stock_quantity'],
+                    'category_id' => $validated['category_id'],
                     'user_id' => auth()->id(),
                     'isActive' => true
                 ]);
@@ -63,6 +65,7 @@ class ProductController extends Controller
                 'name' => $validated['name'],
                 'price' => $validated['price'],
                 'stock_quantity' => $validated['stock_quantity'],
+                'category_id' => $validated['category_id'],
                 'user_id' => auth()->id(),
                 'isActive' => true
             ]);
@@ -96,6 +99,7 @@ class ProductController extends Controller
                     Rule::unique('products')->ignore($id), 
                 ],
                 'price' => 'required',
+                'category_id' => 'required|exists:categories,id',
             ]);
 
             

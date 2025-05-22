@@ -16,8 +16,6 @@ return new class extends Migration
             $table->string('name', 50);
             $table->decimal('price', 10, 2);
             $table->double('stock_quantity');
-            $table->integer('returned')->default(0);
-            $table->integer('borrowed')->default(0);
             $table->boolean('track_stock')->default(true);
             $table->foreignId('category_id')->constrained()->onDelete('restrict');
             $table->foreignId('user_id')->constrained()->onDelete('restrict');
