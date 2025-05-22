@@ -47,7 +47,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/dashboard-summary', [DashboardController::class, 'getSummary']);
         Route::get('/dashboard-graph', [DashboardController::class, 'getGraphData']);
-        
+
         Route::post('/user/add', [UserManagementController::class, 'store']);
+        Route::put('/user/update/{id}', [UserManagementController::class, 'update']);
     });
 });

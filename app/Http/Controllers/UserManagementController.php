@@ -125,36 +125,77 @@ class UserManagementController extends Controller
         ]);
     }
     
-    public function update(Request $request, User $user)
+    public function update(Request $request, $id) 
     {
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'username' => [
-                'sometimes',
-                'string',
-                'max:255',
-                Rule::unique('users')->ignore($user->id),
-            ],
-            'password' => 'sometimes|string|min:8',
-            'role' => 'sometimes|string|in:admin,staff',
-        ]);
-        
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
+        try {
+            $validated = $request->validate([
+                'fname' => 'required|string|max:255',
+                'lname' => 'required|string|max:255',
+                'username' => 'required|string|max:255',
+                'password' => 'nullable|string|min:8|confirmed', // password_confirmation required
+                'role' => 'required|string|in:admin,staff',
+            ]);
+
+            $user = User::findOrFail($id);
+
+            $existingUserWithUsername = User::where('username', $validated['username'])
+                                            ->where('id', '!=', $id)
+                                            ->where('isActive', true)
+                                            ->first();
+
+            if ($existingUserWithUsername) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Username already taken by another user.',
+                    'errors' => [
+                        'username' => ['This username is already taken.']
+                    ]
+                ], 422);
+            }
+
+            if (!empty($validated['password'])) {
+                $validated['password'] = Hash::make($validated['password']);
+            } else {
+                unset($validated['password']); // Don't update password
+            }
+
+            $user->update($validated);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User updated successfully',
+                'user' => [
+                    'id' => $user->id,
+                    'fname' => $user->fname,
+                    'lname' => $user->lname,
+                    'username' => $user->username,
+                    'role' => $user->role,
+                ]
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User not found.'
+            ], 404);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error updating user: ' . $e->getMessage(), [
+                'user_id' => $id,
+                'exception' => $e
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred while updating the user.'
+            ], 500);
         }
-        
-        $user->update($validated);
-        
-        return response()->json([
-            'message' => 'User updated successfully',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'username' => $user->username,
-                'role' => $user->role,
-            ]
-        ]);
     }
+
     
     public function destroy(User $user)
     {
