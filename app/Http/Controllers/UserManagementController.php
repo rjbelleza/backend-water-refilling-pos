@@ -18,7 +18,7 @@ class UserManagementController extends Controller
     public function index()
     {
         try {
-            $users = User::select('id', 'fname', 'lname', 'username', 'role', 'created_at')->get();
+            $users = User::select('id', 'fname', 'lname', 'username', 'role', 'created_at')->where('isActive', 1)->get();
         
             return response()->json($users);
         } catch (\Exception $e) {
@@ -29,29 +29,67 @@ class UserManagementController extends Controller
     
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users',
-            'password' => 'required|string|min:8',
-            'role' => 'required|string|in:admin,staff',
-        ]);
-        
-        $user = User::create([
-            'name' => $validated['name'],
-            'username' => $validated['username'],
-            'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
-        ]);
-        
-        return response()->json([
-            'message' => 'User created successfully',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'username' => $user->username,
-                'role' => $user->role,
-            ]
-        ], 201);
+        try {
+            $validated = $request->validate([
+                'fname' => 'required|string|max:255',
+                'lname' => 'required|string|max:255',
+                'username' => 'required|string|max:255|unique:users,username',
+                'password' => 'required|string|min:8|confirmed', 
+                'role' => 'required|string|in:admin,staff',
+            ]);
+
+            $user = User::where('fname', $validated['fname'])
+                        ->where('lname', $validated['lname'])
+                        ->first();
+
+            if ($user && !$user->isActive) {
+                User::update([
+                    'username' => $validated['username'],
+                    'password' => $validated['password'],
+                    'isActive' => true
+                ]);
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'User added successfully',
+                    'product' => $user
+                ]);
+            }
+
+            if ($user && $user->isActive) {
+                 return response()->json([
+                    'status' => 'error',
+                    'message' => 'User already exists.'
+                ], 409);
+            }
+
+            // Create the user with hashed password
+            $user = User::create([
+                'fname' => $validated['fname'],
+                'lname' => $validated['lname'],
+                'username' => $validated['username'],
+                'password' => Hash::make($validated['password']),
+                'role' => $validated['role'],
+                'isActive' => true
+            ]);
+
+            return response()->json([
+                'message' => ucfirst($user->role) . ' user created successfully.',
+                'user' => [
+                    'id' => $user->id,
+                    'fname' => $user->name,
+                    'lname' => $user->name,
+                    'username' => $user->username,
+                    'role' => $user->role,
+                ]
+            ], 201);
+        } catch (\Exception $e) {
+            \Log::error('Error creating user' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
     }
     
     public function show(User $user)

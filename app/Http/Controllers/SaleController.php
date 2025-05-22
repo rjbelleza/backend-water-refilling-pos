@@ -77,15 +77,16 @@ class SaleController extends Controller
             }
 
             // Always insert or fetch customer, even for walk-in
-            $customerName = trim(strtolower($validated['customer_name'] ?? 'walk-in'));
-            $customer = Customer::firstOrCreate(['name' => $customerName]);
+           $originalName = trim($validated['customer_name'] ?? 'walk-in');
 
-            // Log customer creation for debugging
-            Log::info('Customer processed:', [
-                'customer_id' => $customer->id,
-                'customer_name' => $customer->name,
-                'was_recently_created' => $customer->wasRecentlyCreated
-            ]);
+            // Try to find customer case-insensitively
+            $customer = Customer::whereRaw('LOWER(name) = ?', [strtolower($originalName)])->first();
+
+            // If not found, create a new one using the original case
+            if (!$customer) {
+                $customer = Customer::create(['name' => $originalName]);
+            }
+
 
             // Prepare sale data
             $saleData = [
