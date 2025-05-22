@@ -30,8 +30,10 @@ class ProductController extends Controller
             'name' => 'required|string',
             'price' => 'required|numeric',
             'category_id' => 'required|exists:categories,id',
-            'stock_quantity' => 'required|integer',
+            'stock_quantity' => 'nullable|integer',
         ]);
+
+        $track_stock = $validated['category_id'] == 1 ? false : true;
 
         try {
             $product = Product::where('name', $validated['name'])->first();
@@ -40,8 +42,9 @@ class ProductController extends Controller
                 // Re-enable and update the existing product
                 $product->update([
                     'price' => $validated['price'],
-                    'stock_quantity' => $validated['stock_quantity'],
+                    'stock_quantity' => $validated['stock_quantity'] ?? 0,
                     'category_id' => $validated['category_id'],
+                    'track_stock' => $track_stock,
                     'user_id' => auth()->id(),
                     'isActive' => true
                 ]);
@@ -64,8 +67,9 @@ class ProductController extends Controller
             $newProduct = Product::create([
                 'name' => $validated['name'],
                 'price' => $validated['price'],
-                'stock_quantity' => $validated['stock_quantity'],
+                'stock_quantity' => $validated['stock_quantity'] ?? 0,
                 'category_id' => $validated['category_id'],
+                'track_stock' => $track_stock,
                 'user_id' => auth()->id(),
                 'isActive' => true
             ]);
