@@ -13,8 +13,8 @@ class Customer extends Model
         'name'
     ];
 
-    public function sales() 
-    {   
-        $this->belongsTo(Sale::class);
+     public function sales()
+    {
+        return $this->hasMany(Sale::class);
     }
 }

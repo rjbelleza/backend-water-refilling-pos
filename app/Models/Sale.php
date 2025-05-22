@@ -11,7 +11,9 @@ class Sale extends Model
 
     protected $fillable = [
         'user_id',
-        'customer',
+        'customer_id',        
+        'subtotal',          
+        'discount',          
         'additional_fee',
         'amount_paid',
         'created_at',
@@ -29,7 +31,7 @@ class Sale extends Model
         return $this->hasMany(SaleProduct::class);
     }
 
-    public function customers() 
+    public function customer()
     {
         return $this->belongsTo(Customer::class);
     }
