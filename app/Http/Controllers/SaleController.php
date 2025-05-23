@@ -14,14 +14,26 @@ class SaleController extends Controller
     public function index(Request $request)
     {
         $pageSize = $request->query('pageSize', 10);
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
 
-        $sales = Sale::with([
-            'user:id,fname,lname,role', // cashier who created it
-            'customer:id,name', // customer information
-            'saleProducts.product:id,name,price' // products involved
-        ])
-        ->orderBy('created_at', 'desc')
-        ->paginate($pageSize);
+        $query = Sale::with([
+            'user:id,fname,lname,role',
+            'customer:id,name', 
+            'saleProducts.product:id,name,price'
+        ]);
+
+        // Apply date filtering if provided
+        if ($startDate) {
+            $query->whereDate('created_at', '>=', $startDate);
+        }
+        
+        if ($endDate) {
+            $query->whereDate('created_at', '<=', $endDate);
+        }
+
+        $sales = $query->orderBy('created_at', 'desc')
+                    ->paginate($pageSize);
 
         return response()->json($sales);
     }

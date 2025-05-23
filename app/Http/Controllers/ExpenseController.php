@@ -7,16 +7,28 @@ use App\Models\Expense;
 
 class ExpenseController extends Controller
 {
-    public function index(Request $request) {
+    public function index(Request $request) 
+    {
         try {
+            $pageSize = $request->query('pageSize', 10); 
+            $startDate = $request->query('start_date');
+            $endDate = $request->query('end_date');
 
-           $pageSize = $request->query('pageSize', 10); 
+            $query = Expense::with(['user']);
 
-           $expenses = Expense::with(['user'])
-                              ->orderBy('created_at', 'desc')
-                              ->paginate($pageSize);
+            // Apply date filtering if provided
+            if ($startDate) {
+                $query->whereDate('created_at', '>=', $startDate);
+            }
 
-           return response()->json($expenses);
+            if ($endDate) {
+                $query->whereDate('created_at', '<=', $endDate);
+            }
+
+            $expenses = $query->orderBy('created_at', 'desc')
+                            ->paginate($pageSize);
+
+            return response()->json($expenses);
 
         } catch (\Exception $e) {
             \Log::error('Error fetching expenses: ' . $e->getMessage());
@@ -27,6 +39,7 @@ class ExpenseController extends Controller
             ]);
         }
     }
+
 
     public function store(Request $request) {
         try {
