@@ -12,17 +12,39 @@ class ProfitController extends Controller
         try {
             $perPage = (int) $request->query('pageSize', 10);
             $page = (int) $request->query('page', 1);
+            $startDate = $request->query('start_date');
+            $endDate = $request->query('end_date');
 
             // Fetch sales grouped by month
-            $sales = DB::table('sales')
-                ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(subtotal - discount) as total_sales')
+            $salesQuery = DB::table('sales')
+                ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(subtotal - discount) as total_sales');
+
+            if ($startDate) {
+                $salesQuery->whereDate('created_at', '>=', $startDate);
+            }
+
+            if ($endDate) {
+                $salesQuery->whereDate('created_at', '<=', $endDate);
+            }
+
+            $sales = $salesQuery
                 ->groupBy('month')
                 ->orderBy('month', 'desc')
                 ->get();
 
             // Fetch expenses grouped by month
-            $expenses = DB::table('expenses')
-                ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(amount) as total_expenses')
+            $expensesQuery = DB::table('expenses')
+                ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(amount) as total_expenses');
+
+            if ($startDate) {
+                $expensesQuery->whereDate('created_at', '>=', $startDate);
+            }
+
+            if ($endDate) {
+                $expensesQuery->whereDate('created_at', '<=', $endDate);
+            }
+
+            $expenses = $expensesQuery
                 ->groupBy('month')
                 ->orderBy('month', 'desc')
                 ->get();
@@ -61,4 +83,5 @@ class ProfitController extends Controller
             ], 500);
         }
     }
+
 }
