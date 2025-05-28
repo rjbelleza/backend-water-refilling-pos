@@ -16,6 +16,14 @@ class ExpenseController extends Controller
 
             $query = Expense::with(['user']);
 
+            // Validate date range
+            if ($startDate && $endDate && $endDate < $startDate) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'The end date cannot be earlier than the start date.'
+                ], 422); // 422 Unprocessable Entity
+            }
+
             // Apply date filtering if provided
             if ($startDate) {
                 $query->whereDate('created_at', '>=', $startDate);

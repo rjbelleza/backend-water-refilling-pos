@@ -15,6 +15,14 @@ class ProfitController extends Controller
             $startDate = $request->query('start_date');
             $endDate = $request->query('end_date');
 
+            // Validate date range
+            if ($startDate && $endDate && $endDate < $startDate) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'The end date cannot be earlier than the start date.'
+                ], 422); // 422 Unprocessable Entity
+            }
+
             // Fetch sales grouped by month
             $salesQuery = DB::table('sales')
                 ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(subtotal - discount) as total_sales');

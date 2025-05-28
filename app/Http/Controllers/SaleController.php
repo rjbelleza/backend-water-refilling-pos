@@ -11,15 +11,23 @@ use Illuminate\Support\Facades\Log;
 
 class SaleController extends Controller
 {
-    public function index(Request $request)
+   public function index(Request $request)
     {
         $pageSize = $request->query('pageSize', 10);
         $startDate = $request->query('start_date');
         $endDate = $request->query('end_date');
 
+        // Validate date range
+        if ($startDate && $endDate && $endDate < $startDate) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'The end date cannot be earlier than the start date.'
+            ], 422); // 422 Unprocessable Entity
+        }
+
         $query = Sale::with([
             'user:id,fname,lname,role',
-            'customer:id,name', 
+            'customer:id,name',
             'saleProducts.product:id,name,price'
         ]);
 
@@ -27,7 +35,7 @@ class SaleController extends Controller
         if ($startDate) {
             $query->whereDate('created_at', '>=', $startDate);
         }
-        
+
         if ($endDate) {
             $query->whereDate('created_at', '<=', $endDate);
         }
@@ -37,6 +45,7 @@ class SaleController extends Controller
 
         return response()->json($sales);
     }
+
 
     public function show($id)
     {
