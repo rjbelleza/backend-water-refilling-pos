@@ -76,7 +76,7 @@ class ProductController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'New product created',
+                'message' => 'Product added successfully',
                 'product' => $newProduct
             ]);
 
