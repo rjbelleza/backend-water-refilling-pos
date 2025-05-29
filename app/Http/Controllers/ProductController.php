@@ -92,7 +92,7 @@ class ProductController extends Controller
     }
 
 
-    public function updateDetails(Request $request, $id) 
+   public function updateDetails(Request $request, $id)
     {
         try {
             $validated = $request->validate([
@@ -100,14 +100,22 @@ class ProductController extends Controller
                     'required',
                     'string',
                     'max:255',
-                    Rule::unique('products')->ignore($id), 
+                    Rule::unique('products')->ignore($id),
                 ],
                 'price' => 'required',
                 'category_id' => 'required|exists:categories,id',
             ]);
 
-            
             $product = Product::findOrFail($id);
+
+            // Check category_id and set stock-related values
+            if ((int)$validated['category_id'] === 2) {
+                $validated['track_stock'] = true;
+            } elseif ((int)$validated['category_id'] === 1) {
+                $validated['track_stock'] = false;
+                $validated['stock_quantity'] = 0;
+            }
+
             $product->update($validated);
 
             return response()->json([
@@ -123,7 +131,7 @@ class ProductController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
-                'error' => $e->getMessage() 
+                'error' => $e->getMessage()
             ], 500);
         }
     }
