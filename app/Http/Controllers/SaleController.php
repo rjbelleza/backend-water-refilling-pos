@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Log;
 
 class SaleController extends Controller
 {
-   public function index(Request $request)
-    {
+  public function index(Request $request)
+  {
         $pageSize = $request->query('pageSize', 10);
         $startDate = $request->query('start_date');
         $endDate = $request->query('end_date');
@@ -22,7 +22,7 @@ class SaleController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'The end date cannot be earlier than the start date.'
-            ], 422); // 422 Unprocessable Entity
+            ], 422);
         }
 
         $query = Sale::with([
@@ -31,7 +31,7 @@ class SaleController extends Controller
             'saleProducts.product:id,name,price'
         ]);
 
-        // Apply date filtering if provided
+        // Apply date filtering
         if ($startDate) {
             $query->whereDate('created_at', '>=', $startDate);
         }
@@ -40,10 +40,19 @@ class SaleController extends Controller
             $query->whereDate('created_at', '<=', $endDate);
         }
 
-        $sales = $query->orderBy('created_at', 'desc')
-                    ->paginate($pageSize);
+        // Clone the query to calculate total sales amount
+        $totalSalesAmount = (clone $query)->get()->sum(function ($sale) {
+            return ($sale->subtotal + $sale->additional_fee) - $sale->discount;
+        });
 
-        return response()->json($sales);
+        // Paginate the sales
+        $sales = $query->orderBy('created_at', 'desc')->paginate($pageSize);
+
+        return response()->json([
+            'status' => 'success',
+            'total_sales_amount' => round($totalSalesAmount, 2),
+            'data' => $sales
+        ]);
     }
 
 

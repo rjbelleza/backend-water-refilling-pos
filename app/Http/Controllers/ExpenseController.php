@@ -21,10 +21,10 @@ class ExpenseController extends Controller
                 return response()->json([
                     'status' => 'error',
                     'message' => 'The end date cannot be earlier than the start date.'
-                ], 422); // 422 Unprocessable Entity
+                ], 422);
             }
 
-            // Apply date filtering if provided
+            // Apply date filtering
             if ($startDate) {
                 $query->whereDate('created_at', '>=', $startDate);
             }
@@ -33,10 +33,18 @@ class ExpenseController extends Controller
                 $query->whereDate('created_at', '<=', $endDate);
             }
 
+            // Clone query to calculate total amount
+            $totalExpenses = (clone $query)->sum('amount');
+
+            // Get paginated result
             $expenses = $query->orderBy('created_at', 'desc')
                             ->paginate($pageSize);
 
-            return response()->json($expenses);
+            return response()->json([
+                'status' => 'success',
+                'total_expenses' => round($totalExpenses, 2),
+                'data' => $expenses
+            ]);
 
         } catch (\Exception $e) {
             \Log::error('Error fetching expenses: ' . $e->getMessage());
