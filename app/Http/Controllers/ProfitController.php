@@ -10,65 +10,53 @@ class ProfitController extends Controller
     public function getMonthlyReport(Request $request)
     {
         try {
-            $perPage = (int) $request->query('pageSize', 10);
+            $perPage = $request->query('pageSize', 12); 
             $page = (int) $request->query('page', 1);
-            $startDate = $request->query('start_date');
-            $endDate = $request->query('end_date');
 
-            // Validate date range
-            if ($startDate && $endDate && $endDate < $startDate) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'The end date cannot be earlier than the start date.'
-                ], 422); // 422 Unprocessable Entity
+            $year = (int) $request->query('year', date('Y'));
+
+            // Build all 12 months of the given year
+            $allMonths = collect();
+            for ($month = 1; $month <= 12; $month++) {
+                $allMonths->push(sprintf('%d-%02d', $year, $month));
             }
 
             // Fetch sales grouped by month
-            $salesQuery = DB::table('sales')
-                ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(subtotal - discount) as total_sales');
-
-            if ($startDate) {
-                $salesQuery->whereDate('created_at', '>=', $startDate);
-            }
-
-            if ($endDate) {
-                $salesQuery->whereDate('created_at', '<=', $endDate);
-            }
-
-            $sales = $salesQuery
+            $sales = DB::table('sales')
+                ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(subtotal - discount) as total_sales')
+                ->whereYear('created_at', '=', $year)
                 ->groupBy('month')
-                ->orderBy('month', 'desc')
-                ->get();
+                ->get()
+                ->keyBy('month');
 
             // Fetch expenses grouped by month
-            $expensesQuery = DB::table('expenses')
-                ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(amount) as total_expenses');
-
-            if ($startDate) {
-                $expensesQuery->whereDate('created_at', '>=', $startDate);
-            }
-
-            if ($endDate) {
-                $expensesQuery->whereDate('created_at', '<=', $endDate);
-            }
-
-            $expenses = $expensesQuery
+            $expenses = DB::table('expenses')
+                ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(amount) as total_expenses')
+                ->whereYear('created_at', '=', $year)
                 ->groupBy('month')
-                ->orderBy('month', 'desc')
-                ->get();
+                ->get()
+                ->keyBy('month');
 
-            // Merge sales and expenses by month
-            $merged = $sales->map(function ($sale) use ($expenses) {
-                $expense = $expenses->firstWhere('month', $sale->month);
-                $totalExpenses = $expense->total_expenses ?? 0;
+            // Merge sales and expenses with all months
+            $merged = $allMonths->map(function ($month) use ($sales, $expenses) {
+                $sale = $sales->get($month);
+                $expense = $expenses->get($month);
+
+                $totalSales = $sale ? (float) $sale->total_sales : 0;
+                $totalExpenses = $expense ? (float) $expense->total_expenses : 0;
 
                 return [
-                    'month' => $sale->month,
-                    'total_sales' => (float) $sale->total_sales,
-                    'total_expenses' => (float) $totalExpenses,
-                    'net_profit' => (float) $sale->total_sales - $totalExpenses,
+                    'month' => $month,
+                    'total_sales' => $totalSales,
+                    'total_expenses' => $totalExpenses,
+                    'net_profit' => $totalSales - $totalExpenses,
                 ];
             });
+
+            // Calculate yearly totals
+            $yearTotalSales = $merged->sum('total_sales');
+            $yearTotalExpenses = $merged->sum('total_expenses');
+            $yearNetProfit = $merged->sum('net_profit');
 
             // Manual pagination
             $offset = ($page - 1) * $perPage;
@@ -80,6 +68,9 @@ class ProfitController extends Controller
                 'per_page' => $perPage,
                 'total' => $merged->count(),
                 'last_page' => ceil($merged->count() / $perPage),
+                'total_sales' => $yearTotalSales,
+                'total_expenses' => $yearTotalExpenses,
+                'net_profit' => $yearNetProfit,
             ]);
         } catch (\Exception $e) {
             \Log::error('Error fetching records: ' . $e->getMessage());
@@ -91,5 +82,4 @@ class ProfitController extends Controller
             ], 500);
         }
     }
-
 }
