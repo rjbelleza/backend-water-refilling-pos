@@ -11,7 +11,7 @@ git clone https://github.com/rjbelleza/backend-water-refilling-pos.git
 git clone git@github.com:rjbelleza/backend-water-refilling-pos.git
 
 # Navigate into the project directory
-cd be-water-refilling-pos
+cd backend-water-refilling-pos
 ```
 
 ### 2. Install Dependencies
