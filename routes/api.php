@@ -50,5 +50,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/user/add', [UserManagementController::class, 'store']);
         Route::put('/user/update/{id}', [UserManagementController::class, 'update']);
+        Route::put('/user/{user}/disable', [UserManagementController::class, 'disable']);
     });
 });

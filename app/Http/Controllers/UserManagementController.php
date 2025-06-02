@@ -197,13 +197,60 @@ class UserManagementController extends Controller
     }
 
     
-    public function destroy(User $user)
+     public function disable(User $user)
     {
-        $user->tokens()->delete(); // Delete all user tokens
-        $user->delete();
-        
-        return response()->json([
-            'message' => 'User deleted successfully'
-        ]);
+        try {
+            // Already inactive
+            if (!$user->isActive) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User is already inactive.'
+                ], 400);
+            }
+
+            // Count total active users
+            $activeUserCount = User::where('isActive', true)->count();
+
+            // Count total active admin users
+            $activeAdminCount = User::where('isActive', true)
+                                    ->where('role', 'admin')
+                                    ->count();
+
+            // Prevent disabling the last active user
+            if ($activeUserCount === 1) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Cannot disable the last active user.'
+                ], 403);
+            }
+
+            // Prevent disabling the last active admin
+            if ($user->role === 'admin' && $activeAdminCount === 1) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Cannot disable the last active admin.'
+                ], 403);
+            }
+
+            // Properly update isActive to boolean false
+            $user->isActive = false;
+            $user->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User disabled successfully.'
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User not found.'
+            ], 404);
+        } catch (\Exception $e) {
+            \Log::error('Error disabling user: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error disabling user.'
+            ], 500);
+        }
     }
 }
