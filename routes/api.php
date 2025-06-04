@@ -9,6 +9,7 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ProfitController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\StockSettingController;
 
 
 // Public routes
@@ -51,5 +52,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/user/add', [UserManagementController::class, 'store']);
         Route::put('/user/update/{id}', [UserManagementController::class, 'update']);
         Route::put('/user/{user}/disable', [UserManagementController::class, 'disable']);
+
+        Route::put('/low_stock/update', [StockSettingController::class, 'updateThreshold']);
+        Route::get('/alert/low_stock_products', [StockSettingController::class, 'lowStockProducts']);
     });
 });
