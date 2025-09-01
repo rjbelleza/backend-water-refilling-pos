@@ -4,7 +4,7 @@ FROM php:8.2-apache
 # Set working directory
 WORKDIR /var/www/html
 
-# Install system dependencies
+# Install system dependencies (with PostgreSQL support)
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -16,12 +16,14 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
+    libpq-dev \ 
     && rm -rf /var/lib/apt/lists/*
 
-# Configure and install PHP extensions
+# Configure and install PHP extensions (Postgres + common extensions)
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
-        pdo_mysql \
+        pdo_pgsql \
+        pgsql \
         mbstring \
         exif \
         pcntl \
@@ -51,7 +53,7 @@ RUN a2enmod rewrite
 # Copy Apache configuration
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Clear and cache configuration (will use environment variables from Render)
+# Clear and cache configuration
 RUN php artisan config:clear || true
 
 # Copy and make start script executable
