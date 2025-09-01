@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -44,7 +45,7 @@ class DashboardController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            \Log::error('Summary fetch failed: ' . $e->getMessage());
+            Log::error('Summary fetch failed: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to fetch summary',
@@ -94,7 +95,7 @@ class DashboardController extends Controller
         try {
             // Get sales data grouped by the appropriate time period
             $salesData = DB::table('sales')
-                ->select(DB::raw("DATE_FORMAT(created_at, '{$timePeriod['format']}') as period"))
+                ->select(DB::raw("TO_CHAR(created_at, '{$timePeriod['format']}') as period"))
                 ->selectRaw('SUM(subtotal - discount) as sales')
                 ->where('created_at', '>=', $timePeriod['startDate'])
                 ->groupBy('period')
@@ -103,7 +104,7 @@ class DashboardController extends Controller
 
             // Get expenses data grouped by the same time period
             $expensesData = DB::table('expenses')
-                ->select(DB::raw("DATE_FORMAT(created_at, '{$timePeriod['format']}') as period"))
+                ->select(DB::raw("TO_CHAR(created_at, '{$timePeriod['format']}') as period"))
                 ->selectRaw('SUM(amount) as expenses')
                 ->where('created_at', '>=', $timePeriod['startDate'])
                 ->groupBy('period')
@@ -170,7 +171,7 @@ class DashboardController extends Controller
 
             return response()->json($formattedData);
         } catch (\Exception $e) {
-            \Log::error('Graph data fetch failed: ' . $e->getMessage());
+            Log::error('Graph data fetch failed: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to fetch graph data',

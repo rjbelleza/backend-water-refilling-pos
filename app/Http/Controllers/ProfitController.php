@@ -23,7 +23,7 @@ class ProfitController extends Controller
 
             // Fetch sales grouped by month
             $sales = DB::table('sales')
-                ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(subtotal - discount) as total_sales')
+                ->selectRaw('TO_CHAR(created_at, "%Y-%m") as month, SUM(subtotal - discount) as total_sales')
                 ->whereYear('created_at', '=', $year)
                 ->groupBy('month')
                 ->get()
@@ -31,7 +31,7 @@ class ProfitController extends Controller
 
             // Fetch expenses grouped by month
             $expenses = DB::table('expenses')
-                ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(amount) as total_expenses')
+                ->selectRaw('TO_CHAR(created_at, "%Y-%m") as month, SUM(amount) as total_expenses')
                 ->whereYear('created_at', '=', $year)
                 ->groupBy('month')
                 ->get()
